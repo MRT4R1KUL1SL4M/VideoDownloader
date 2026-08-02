@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const { execFile, spawn } = require('child_process');
+const { execFile } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
 const ffmpegPath = require('ffmpeg-static');
+const ytdlpExec = require('yt-dlp-exec');
 const { extractInstagramWithBypass } = require('./igBypass.js');
 
 const app = express();
@@ -89,84 +90,63 @@ function detectPlatform(extractorStr = '', url = '') {
 }
 
 // Run yt-dlp to extract video metadata
-function extractVideoInfo(videoUrl) {
-  return new Promise((resolve, reject) => {
-    const cleanUrl = videoUrl.split('?')[0];
+async function extractVideoInfo(videoUrl) {
+  const cleanUrl = videoUrl.split('?')[0];
+  const options = {
+    dumpSingleJson: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+  };
 
-    const args = [
-      '-m', 'yt_dlp',
-      '--dump-json',
-      '--no-warnings',
-      '--prefer-free-formats',
-      '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-    ];
+  if (fs.existsSync(cookiesPath)) {
+    options.cookies = cookiesPath;
+  }
 
-    if (fs.existsSync(cookiesPath)) {
-      args.push('--cookies', cookiesPath);
+  try {
+    const data = await ytdlpExec(cleanUrl, options);
+    return data;
+  } catch (error) {
+    const errText = (error.stderr || error.message || '').toLowerCase();
+    console.error('yt-dlp-exec error:', error.stderr || error.message);
+
+    // Try fallback bypass for Instagram links
+    if (cleanUrl.includes('instagram.com')) {
+      try {
+        const bypassData = await extractInstagramWithBypass(cleanUrl);
+        if (bypassData && bypassData.videoUrl) {
+          return {
+            id: 'ig_' + (bypassData.shortcode || Date.now()),
+            title: bypassData.title || 'Instagram Reel Video',
+            thumbnail: bypassData.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&auto=format&fit=crop&q=80',
+            uploader: 'Instagram Creator',
+            duration: 0,
+            extractor: 'instagram',
+            webpage_url: cleanUrl,
+            formats: [
+              {
+                format_id: 'ig_direct',
+                url: bypassData.videoUrl,
+                ext: 'mp4',
+                height: 1080,
+                vcodec: 'h264',
+                acodec: 'aac',
+                format_note: '1080p Full HD'
+              }
+            ]
+          };
+        }
+      } catch (bypassErr) {
+        console.error('Bypass error:', bypassErr.message);
+      }
+
+      if (errText.includes("can't be seen by certain audiences") || errText.includes("private") || errText.includes("login")) {
+        throw new Error('🔒 This Instagram Reel is from a Private profile or has age restrictions set by the owner. Please try any Public video or Reel link!');
+      }
     }
 
-    args.push(cleanUrl);
-
-    execFile('python', args, { maxBuffer: 1024 * 1024 * 50 }, async (error, stdout, stderr) => {
-      if (error) {
-        const errText = (stderr || error.message || '').toLowerCase();
-        console.error('yt-dlp error:', stderr || error.message);
-        
-        // Try fallback bypass for Instagram links
-        if (cleanUrl.includes('instagram.com')) {
-          try {
-            const bypassData = await extractInstagramWithBypass(cleanUrl);
-            if (bypassData && bypassData.videoUrl) {
-              return resolve({
-                id: 'ig_' + (bypassData.shortcode || Date.now()),
-                title: bypassData.title || 'Instagram Reel Video',
-                thumbnail: bypassData.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&auto=format&fit=crop&q=80',
-                uploader: 'Instagram Creator',
-                duration: 0,
-                extractor: 'instagram',
-                webpage_url: cleanUrl,
-                formats: [
-                  {
-                    format_id: 'ig_direct',
-                    url: bypassData.videoUrl,
-                    ext: 'mp4',
-                    height: 1080,
-                    vcodec: 'h264',
-                    acodec: 'aac',
-                    format_note: '1080p Full HD'
-                  }
-                ]
-              });
-            }
-          } catch (bypassErr) {
-            console.error('Bypass error:', bypassErr.message);
-          }
-
-          if (errText.includes("can't be seen by certain audiences") || errText.includes("private") || errText.includes("login")) {
-            return reject(new Error('🔒 This Instagram Reel is from a Private profile or has age restrictions set by the owner. Please try any Public video or Reel link!'));
-          }
-        }
-
-        return reject(new Error('Unable to extract video. Please verify that the link is valid and public.'));
-      }
-
-      try {
-        const data = JSON.parse(stdout.trim());
-        resolve(data);
-      } catch (parseErr) {
-        const lines = stdout.trim().split('\n');
-        for (const line of lines) {
-          try {
-            const parsed = JSON.parse(line);
-            return resolve(parsed);
-          } catch (e) {
-            continue;
-          }
-        }
-        reject(new Error('Failed to process video metadata payload.'));
-      }
-    });
-  });
+    throw new Error('Unable to extract video. Please verify that the link is valid and public.');
+  }
 }
 
 // Process and structure formats including 4K, 2K, 1080p Full HD, 720p HD, 480p, 360p & Audio MP3
@@ -418,31 +398,24 @@ app.get('/api/proxy-download', (req, res) => {
   const targetUrl = (pageUrl && pageUrl.startsWith('http')) ? pageUrl : videoUrl;
   const formatSelection = isAudio ? 'bestaudio/best' : (formatId && formatId !== 'ig_direct' && formatId !== 'direct' ? `${formatId}+bestaudio/bestvideo+bestaudio/best` : 'best');
 
-  const args = [
-    '-m', 'yt_dlp',
-    '--ffmpeg-location', ffmpegPath,
-    '-f', formatSelection,
-    '-o', '-',
-    '--no-warnings',
-    '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-  ];
+  const execFlags = {
+    ffmpegLocation: ffmpegPath,
+    format: formatSelection,
+    output: '-',
+    noWarnings: true,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+  };
 
   if (fs.existsSync(cookiesPath)) {
-    args.push('--cookies', cookiesPath);
+    execFlags.cookies = cookiesPath;
   }
 
-  args.push(targetUrl.split('?')[0]);
-
-  const child = spawn('python', args);
+  const child = ytdlpExec.exec(targetUrl.split('?')[0], execFlags, { stdio: ['ignore', 'pipe', 'pipe'] });
 
   child.stdout.pipe(res);
 
-  child.stderr.on('data', (data) => {
-    // Log progress silently
-  });
-
   req.on('close', () => {
-    child.kill();
+    if (child.kill) child.kill();
   });
 });
 
