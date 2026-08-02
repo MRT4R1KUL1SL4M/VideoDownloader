@@ -3,3 +3,6 @@ cookies.txt
 .env
 *.log
 .DS_Store
+*-player-script.js
+fb_*.html
+mbasic_*.html

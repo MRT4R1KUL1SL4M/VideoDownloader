@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SnapFetch Pro — Ultra HD Video & Audio Downloader Engine</title>
+  <title>Universal Downloader</title>
   <meta name="description" content="Download 4K Ultra HD & 1080p Full HD videos with spatial audio from YouTube, Instagram, TikTok, Facebook, Twitter/X, and Reddit for free.">
   
   <!-- Premium Google Fonts: Outfit & Plus Jakarta Sans -->
@@ -27,18 +27,21 @@
   <header class="header-nav">
     <div class="container nav-inner">
       <a href="#" class="brand-link">
-        <div class="brand-badge">
-          <i class="fa-solid fa-bolt-lightning"></i>
+        <div class="brand-badge cute-logo-badge">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
         </div>
         <div class="brand-info">
-          <span class="brand-name">SnapFetch<span class="pro-tag">PRO</span></span>
-          <span class="brand-sub">Universal Media Engine</span>
+          <div class="brand-title-row">
+            <span class="brand-title-text">Universal</span>
+            <span class="cute-tag">DOWNLOADER</span>
+          </div>
+          <span class="brand-sub">✦ Ultra HD Media Engine</span>
         </div>
       </a>
 
       <nav class="nav-menu">
-        <a href="#downloader-section" class="nav-item active"><i class="fa-solid fa-cloud-arrow-down"></i> Downloader Console</a>
-        <a href="#features-section" class="nav-item"><i class="fa-solid fa-shield-halved"></i> Key Features</a>
+        <a href="#downloader-section" class="nav-item active"><i class="fa-solid fa-cloud-arrow-down"></i> Console</a>
+        <a href="#features-section" class="nav-item"><i class="fa-solid fa-sparkles"></i> Features</a>
         <a href="#supported-platforms" class="nav-item"><i class="fa-solid fa-layer-group"></i> Supported Sites</a>
         <a href="#faq-section" class="nav-item"><i class="fa-solid fa-circle-question"></i> FAQ</a>
       </nav>
@@ -48,7 +51,7 @@
           <i class="fa-solid fa-moon"></i>
         </button>
         <a href="#downloader-section" class="btn btn-primary btn-sm">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Quick Download
+          <i class="fa-solid fa-heart"></i> Quick Download
         </a>
       </div>
     </div>
@@ -61,16 +64,16 @@
         <!-- Live Status Pill Badge -->
         <div class="hero-pill">
           <span class="live-dot"></span>
-          <span>✦ ULTIMATE MEDIA EXTRACTION ENGINE • 4K ULTRA HD & SPATIAL AUDIO</span>
+          <span>✦ UNIVERSAL DOWNLOADER • 480P TO 4K ULTRA HD & SPATIAL AUDIO</span>
         </div>
 
         <!-- Headline -->
         <h1 class="hero-heading">
-          Download Any Social Media Video <br>
-          <span class="shimmer-gradient">in 4K Ultra HD & Spatial Audio</span>
+          Universal Downloader <br>
+          <span class="shimmer-gradient">for YouTube, TikTok, Reels, FB & More</span>
         </h1>
         <p class="hero-subtext">
-          Instant high-bitrate extraction from YouTube, Instagram Reels, TikTok (No Watermark), Facebook Watch, X / Twitter, and Reddit. 100% Free with pristine original quality.
+          Instant high-bitrate stream extraction from YouTube, Instagram Reels, TikTok (No Watermark), Facebook Watch, X / Twitter, and Reddit. 100% Free with pristine original quality.
         </p>
 
         <!-- Main Downloader Console Card -->
@@ -95,7 +98,7 @@
                 <input 
                   type="url" 
                   id="url-input" 
-                  placeholder="Paste URL here (e.g. https://youtube.com/watch?v=... or Instagram Reel)" 
+                  placeholder="Paste URL here (e.g. YouTube, TikTok, Instagram Reel, Facebook, Twitter)" 
                   required
                   autocomplete="off"
                   spellcheck="false"
@@ -111,7 +114,7 @@
               </div>
 
               <button type="submit" id="submit-btn" class="btn btn-hero btn-block">
-                <i class="fa-solid fa-download"></i> <span>Extract High-Res Media</span>
+                <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Extract High-Res Media</span>
               </button>
             </form>
 
@@ -166,26 +169,8 @@
       <div class="container">
         <div class="cockpit-card">
           <div class="cockpit-grid">
-            <!-- Left: Video Poster Inspection Column -->
-            <div class="poster-column">
-              <div class="poster-wrapper">
-                <img id="res-thumbnail" src="" alt="Video Poster">
-                <div class="duration-badge" id="res-duration"><i class="fa-regular fa-clock"></i> 00:00</div>
-                <div class="resolution-badge" id="res-top-tag"><i class="fa-solid fa-bolt"></i> 4K ULTRA HD</div>
-              </div>
-
-              <button class="btn btn-secondary btn-block preview-btn" onclick="openLivePreviewModal()">
-                <i class="fa-solid fa-circle-play"></i> Instant Media Preview
-              </button>
-
-              <div class="media-stats-row">
-                <span id="stat-views"><i class="fa-solid fa-eye"></i> -- Views</span>
-                <span id="stat-likes"><i class="fa-solid fa-thumbs-up"></i> -- Likes</span>
-              </div>
-            </div>
-
-            <!-- Right: Download Center & Resolutions Column -->
-            <div class="download-center-column">
+            <!-- Left Column: Video Poster, Title & Technical Metadata -->
+            <div class="cockpit-left-metadata">
               <div class="meta-row">
                 <span class="platform-tag" id="res-platform-tag">
                   <i class="fa-brands fa-youtube"></i> YouTube 4K
@@ -197,13 +182,42 @@
 
               <h2 class="media-title" id="res-title">Extracted Video Title Will Appear Here...</h2>
 
+              <div class="poster-wrapper">
+                <img id="res-thumbnail" src="" alt="Video Poster">
+                <div class="duration-badge" id="res-duration"><i class="fa-regular fa-clock"></i> 00:00</div>
+                <div class="resolution-badge" id="res-top-tag"><i class="fa-solid fa-bolt"></i> 4K ULTRA HD</div>
+              </div>
+
+              <!-- Rich Technical Metadata Grid -->
+              <div class="tech-spec-grid" id="res-tech-specs">
+                <div class="tech-spec-pill"><i class="fa-solid fa-expand"></i> <span id="spec-dim">1920 × 1080</span></div>
+                <div class="tech-spec-pill"><i class="fa-solid fa-gauge-high"></i> <span id="spec-fps">60 FPS</span></div>
+                <div class="tech-spec-pill"><i class="fa-solid fa-microchip"></i> <span id="spec-codec">H.264 / AAC</span></div>
+                <div class="tech-spec-pill"><i class="fa-solid fa-calendar-day"></i> <span id="spec-date">Aug 2026</span></div>
+                <div class="tech-spec-pill"><i class="fa-solid fa-sliders"></i> <span id="spec-audio">320kbps Stereo</span></div>
+              </div>
+
+              <div class="media-stats-row">
+                <span id="stat-views"><i class="fa-solid fa-eye"></i> -- Views</span>
+                <span id="stat-likes"><i class="fa-solid fa-thumbs-up"></i> -- Likes</span>
+              </div>
+
+              <button class="btn btn-secondary btn-block preview-btn" onclick="openLivePreviewModal()">
+                <i class="fa-solid fa-circle-play"></i> Instant Media Preview
+              </button>
+            </div>
+
+            <!-- Right Column: Download Links & Format Selector -->
+            <div class="cockpit-right-links">
+              <h3 class="right-links-heading"><i class="fa-solid fa-cloud-arrow-down"></i> Direct Download Streams</h3>
+              
               <!-- Download Type Category Selector -->
               <div class="download-category-tabs">
                 <button class="category-tab active" id="tab-cat-video" onclick="filterFormatCategory('combined')">
-                  <i class="fa-solid fa-film"></i> Full HD & 4K Video (With Audio)
+                  <i class="fa-solid fa-film"></i> Full Resolutions (480p to 4K)
                 </button>
                 <button class="category-tab" id="tab-cat-audio" onclick="filterFormatCategory('audio')">
-                  <i class="fa-solid fa-music"></i> Spatial Audio (MP3 320kbps)
+                  <i class="fa-solid fa-music"></i> Spatial Audio (MP3)
                 </button>
               </div>
 
@@ -262,7 +276,7 @@
     <section class="features-section" id="features-section">
       <div class="container">
         <div class="section-title-bar text-center">
-          <h2>Why <span class="shimmer-gradient">SnapFetch Pro</span> is the #1 Downloader</h2>
+          <h2>Why <span class="shimmer-gradient">Universal Downloader</span> is #1</h2>
           <p class="section-subtitle">Engineered for extreme performance, 4K resolution clarity, and zero pop-ups.</p>
         </div>
 
@@ -304,11 +318,11 @@
         <div class="faq-accordion">
           <details class="faq-card">
             <summary class="faq-question">
-              <span>1. Is SnapFetch Pro completely free to use?</span>
+              <span>1. Is Universal Downloader completely free to use?</span>
               <i class="fa-solid fa-chevron-down"></i>
             </summary>
             <div class="faq-answer">
-              <p>Yes! SnapFetch Pro is 100% free with unlimited extractions. No registration or credit card required.</p>
+              <p>Yes! Universal Downloader is 100% free with unlimited extractions. No registration or credit card required.</p>
             </div>
           </details>
 
@@ -336,6 +350,29 @@
     </section>
   </main>
 
+  <!-- Breathtaking Extraction Loading Modal -->
+  <div class="modal-overlay hidden" id="extract-loading-modal">
+    <div class="extract-loader-card">
+      <div class="loader-orb-container">
+        <div class="scanning-orb"></div>
+        <div class="loader-ring ring-1"></div>
+        <div class="loader-ring ring-2"></div>
+        <div class="loader-icon-center"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+      </div>
+      <h3 class="loader-title shimmer-gradient">Universal Downloader</h3>
+      <div class="loader-step-text" id="loading-step-text">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> <span>✦ Connecting to Ultra-HD Media CDNs...</span>
+      </div>
+      <div class="loader-progress-bar">
+        <div class="loader-progress-fill" id="loading-progress-fill"></div>
+      </div>
+      <div class="loader-badge-row">
+        <span class="loader-badge"><i class="fa-solid fa-shield-halved"></i> 100% Direct Stream</span>
+        <span class="loader-badge"><i class="fa-solid fa-heart"></i> Pristine Quality</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Video Stream Preview Modal -->
   <div class="modal-overlay hidden" id="preview-modal">
     <div class="modal-card">
@@ -355,8 +392,8 @@
   <!-- Clean Minimalist Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
-      <i class="fa-solid fa-bolt-lightning" style="color: #6366f1;"></i> 
-      <span><strong>SnapFetch PRO</strong> &copy; 2026 SnapFetch Inc. All rights reserved.</span>
+      <i class="fa-solid fa-wand-magic-sparkles" style="color: #ec4899;"></i> 
+      <span><strong>Universal Downloader</strong> &copy; 2026 All rights reserved. Made with <i class="fa-solid fa-heart" style="color:#ec4899;"></i></span>
     </div>
   </footer>
 
