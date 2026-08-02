@@ -334,37 +334,49 @@ async function extractReddit(cleanUrl) {
   return null;
 }
 
-// 4. Facebook Pure JS Engine
+// 4. Facebook Pure JS Engine (Reels & Watch Supported)
 async function extractFacebook(cleanUrl) {
   try {
-    const mobileUrl = cleanUrl.replace('www.facebook.com', 'mbasic.facebook.com').replace('web.facebook.com', 'mbasic.facebook.com');
-    const html = await fetchHtml(mobileUrl, {
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
+    // Tier 1: Facebook Video Embed Plugin Scraper
+    const embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(cleanUrl)}&show_text=false`;
+    const embedHtml = await fetchHtml(embedUrl, {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9'
     });
 
-    const sdMatch = html.match(/browser_native_sd_url":"([^"]+)"/) || html.match(/href="\/video_redirect\/\?src=([^"&]+)"/) || html.match(/sd_src\s*:\s*"([^"]+)"/);
-    const hdMatch = html.match(/browser_native_hd_url":"([^"]+)"/) || html.match(/hd_src\s*:\s*"([^"]+)"/);
+    let hdMatch = embedHtml.match(/playable_url_quality_hd":"([^"]+)"/) || embedHtml.match(/hd_src":"([^"]+)"/);
+    let sdMatch = embedHtml.match(/playable_url":"([^"]+)"/) || embedHtml.match(/sd_src":"([^"]+)"/);
 
-    const videoUrl = hdMatch ? hdMatch[1].replace(/\\/g, '').replace(/\\u0026/g, '&') :
-                     sdMatch ? sdMatch[1].replace(/\\/g, '').replace(/\\u0026/g, '&') : null;
+    // Tier 2: Mobile Facebook Page Fallback
+    if (!hdMatch && !sdMatch) {
+      const mobileUrl = cleanUrl.replace('www.facebook.com', 'mbasic.facebook.com').replace('web.facebook.com', 'mbasic.facebook.com');
+      const mobileHtml = await fetchHtml(mobileUrl, {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
+      });
+      sdMatch = mobileHtml.match(/browser_native_sd_url":"([^"]+)"/) || mobileHtml.match(/href="\/video_redirect\/\?src=([^"&]+)"/) || mobileHtml.match(/sd_src\s*:\s*"([^"]+)"/);
+      hdMatch = mobileHtml.match(/browser_native_hd_url":"([^"]+)"/) || mobileHtml.match(/hd_src\s*:\s*"([^"]+)"/);
+    }
 
-    if (videoUrl) {
+    const rawVideoUrl = hdMatch ? hdMatch[1] : sdMatch ? sdMatch[1] : null;
+
+    if (rawVideoUrl) {
+      const videoUrl = rawVideoUrl.replace(/\\/g, '').replace(/\\u0026/g, '&');
       const format = {
         format_id: 'fb_hd',
-        quality: hdMatch ? '1080p HD Video' : '720p SD Video',
-        quality_tag: hdMatch ? 'FULL HD' : '720p SD',
-        height: hdMatch ? 1080 : 720,
+        quality: hdMatch ? '1080p Full HD Video' : '480p Standard SD Video',
+        quality_tag: hdMatch ? 'FULL HD' : '480p SD',
+        height: hdMatch ? 1080 : 480,
         ext: 'mp4',
         has_video: true,
         has_audio: true,
         is_combo: true,
-        download_url: decodeURIComponent(videoUrl),
+        download_url: videoUrl,
         page_url: cleanUrl
       };
 
       return {
         id: 'fb_' + Date.now(),
-        title: 'Facebook Watch Video',
+        title: 'Facebook Reel & Watch Video',
         thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&auto=format&fit=crop&q=80',
         uploader: 'Facebook Creator',
         duration: 'N/A',
@@ -375,12 +387,12 @@ async function extractFacebook(cleanUrl) {
           combined: [format],
           audio: [{
             format_id: 'fb_audio',
-            quality: 'MP3 Audio Stream',
+            quality: 'MP3 High Bitrate Audio',
             quality_tag: '🎵 AUDIO MP3',
             ext: 'mp3',
             has_video: false,
             has_audio: true,
-            download_url: decodeURIComponent(videoUrl),
+            download_url: videoUrl,
             page_url: cleanUrl
           }]
         }
