@@ -12,11 +12,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 let cookiesPath = path.join(__dirname, 'cookies.txt');
 
-// Support Vercel Environment Variable COOKIES_DATA
-if (!fs.existsSync(cookiesPath) && process.env.COOKIES_DATA) {
+// Support Vercel Environment Variables (COOKIES_BASE64 or COOKIES_DATA)
+const envCookies = process.env.COOKIES_BASE64 || process.env.COOKIES_DATA;
+if (!fs.existsSync(cookiesPath) && envCookies) {
   try {
     const tmpCookiesPath = path.join('/tmp', 'cookies.txt');
-    fs.writeFileSync(tmpCookiesPath, process.env.COOKIES_DATA);
+    let cookiesContent = envCookies;
+
+    // Check if Base64 encoded
+    if (!envCookies.includes('.instagram.com') && !envCookies.includes('# Netscape')) {
+      cookiesContent = Buffer.from(envCookies, 'base64').toString('utf-8');
+    }
+
+    fs.writeFileSync(tmpCookiesPath, cookiesContent);
     cookiesPath = tmpCookiesPath;
   } catch (e) {
     console.error('Failed to write temp cookies.txt on Vercel:', e.message);
