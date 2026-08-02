@@ -10,7 +10,18 @@ const { extractInstagramWithBypass } = require('./igBypass.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const cookiesPath = path.join(__dirname, 'cookies.txt');
+let cookiesPath = path.join(__dirname, 'cookies.txt');
+
+// Support Vercel Environment Variable COOKIES_DATA
+if (!fs.existsSync(cookiesPath) && process.env.COOKIES_DATA) {
+  try {
+    const tmpCookiesPath = path.join('/tmp', 'cookies.txt');
+    fs.writeFileSync(tmpCookiesPath, process.env.COOKIES_DATA);
+    cookiesPath = tmpCookiesPath;
+  } catch (e) {
+    console.error('Failed to write temp cookies.txt on Vercel:', e.message);
+  }
+}
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
